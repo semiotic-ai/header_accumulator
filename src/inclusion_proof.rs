@@ -44,15 +44,15 @@ pub fn generate_inclusion_proof(
         epoch_accumulators.push(compute_epoch_accumulator(header_records)?);
     }
 
-    for block_idx in start_block..end_block {
+    for (block_idx, header) in headers.iter().enumerate().skip(start_block).take(end_block - start_block) {
         let epoch = block_idx / 8192;
         let epoch_acc = epoch_accumulators[epoch].clone();
-        let header = headers[block_idx].clone();
+        let header = header.clone();
         inclusion_proof_vec.push(
             MasterAccumulator::construct_proof(&header, &epoch_acc)
                 .map_err(|_| EraValidateError::ProofGenerationFailure)?,
         );
-    }
+    }    
     Ok(inclusion_proof_vec)
 }
 
@@ -81,7 +81,7 @@ pub fn verify_inclusion_proof(
     let blocks = extract_100_blocks(&directory, start_block, end_block)?;
     for block_idx in 0..num_blocks {
         let bhp = BlockHeaderProof::AccumulatorProof(AccumulatorProof {
-            proof: inclusion_proof[block_idx].clone(),
+            proof: inclusion_proof[block_idx],
         });
         let hwp = HeaderWithProof {
             header: header_from_block(&blocks[block_idx])?,

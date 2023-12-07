@@ -113,10 +113,7 @@ fn main() {
                 None => 0,
             };
 
-            let end_epoch = match end_epoch {
-                Some(end_epoch) => Some(end_epoch.parse::<usize>().unwrap()),
-                None => None,
-            };
+            let end_epoch = end_epoch.map(|end_epoch| end_epoch.parse::<usize>().unwrap());
 
             if let Err(result) =
                 era_validate(directory, master_accumulator_file, start_epoch, end_epoch)
