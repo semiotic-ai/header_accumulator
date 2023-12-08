@@ -14,7 +14,7 @@ fn main() {
                 .arg(
                     Arg::new("directory")
                         .help("Directory where the flat files are stored")
-                        .required(true)
+                        .required(false)
                         .index(1),
                 )
                 .arg(
@@ -100,9 +100,8 @@ fn main() {
 
     match matches.subcommand() {
         Some(("era_validate", era_validate_matches)) => {
-            let directory = era_validate_matches
-                .get_one::<String>("directory")
-                .expect("Directory is required.");
+            let directory = era_validate_matches.get_one::<String>("directory");
+
             let master_accumulator_file =
                 era_validate_matches.get_one::<String>("master_accumulator_file");
             let start_epoch = era_validate_matches.get_one::<String>("start_epoch");

@@ -1,4 +1,4 @@
-use decoder::{decode_flat_files, protos::block::Block};
+use decoder::{decode_flat_files, protos::block::Block, DecodeInput};
 use ethereum_types::H256 as Hash256;
 use ethereum_types::{Bloom, H160, H64, U256 as EthereumU256};
 use ethportal_api::types::execution::accumulator::{EpochAccumulator, HeaderRecord};
@@ -23,8 +23,9 @@ pub fn extract_100_blocks(
     let mut blocks: Vec<Block> = Vec::new();
     for block_number in (start_100_block..end_100_block).step_by(100) {
         let block_file_name = directory.to_owned() + &format!("/{:010}.dbin", block_number);
-        println!("Reading block file {}", block_file_name);
-        let block = &decode_flat_files(&block_file_name, None, None)
+        let input: DecodeInput = DecodeInput::Path(block_file_name);
+        // println!("Reading block file {}", block_file_name);
+        let block = &decode_flat_files(input, None, None)
             .map_err(|_| EraValidateError::FlatFileDecodeError)?;
         blocks.extend(block.clone());
     }
@@ -145,7 +146,9 @@ mod test {
     #[test]
     fn test_header_from_block() {
         let blocks = decode_flat_files(
-            "./src/assets/ethereum_firehose_first_8200/0000008200.dbin",
+            DecodeInput::Path(
+                "./src/assets/ethereum_firehose_first_8200/0000008200.dbin".to_string(),
+            ),
             None,
             None,
         )

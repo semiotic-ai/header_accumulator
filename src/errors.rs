@@ -9,6 +9,7 @@ pub enum EraValidateError {
     EraAccumulatorMismatch,
     EpochAccumulatorError,
     ProofGenerationFailure,
+    IoError,
 }
 impl std::error::Error for EraValidateError {}
 
@@ -30,6 +31,7 @@ impl fmt::Display for EraValidateError {
             EraValidateError::ProofGenerationFailure => {
                 write!(f, "Error generating inclusion proof")
             }
+            EraValidateError::IoError => write!(f, "Error reading from stdin"),
         }
     }
 }
