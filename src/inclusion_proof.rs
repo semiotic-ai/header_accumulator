@@ -75,10 +75,10 @@ pub fn verify_inclusion_proof(
 
     for (block_idx, _) in blocks.iter().enumerate() {
         let bhp = BlockHeaderProof::AccumulatorProof(AccumulatorProof {
-            proof: inclusion_proof[block_idx as usize],
+            proof: inclusion_proof[block_idx],
         });
         let hwp = HeaderWithProof {
-            header: header_from_block(&blocks[block_idx as usize].clone())?,
+            header: header_from_block(&blocks[block_idx].clone())?,
             proof: bhp,
         };
         master_acc
