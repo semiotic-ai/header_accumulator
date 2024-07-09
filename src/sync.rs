@@ -22,17 +22,14 @@ impl LockEntry {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Default, Serialize, Deserialize)]
 pub struct Lock {
     entries: HashMap<String, String>,
 }
 
 impl Lock {
-    // Convenience method for creating a new Lock instance
     pub fn new() -> Self {
-        Lock {
-            entries: HashMap::new(),
-        }
+        Lock::default()
     }
 }
 
