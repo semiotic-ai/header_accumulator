@@ -89,7 +89,7 @@ pub fn check_sync_state(
         .ok_or(SyncError::LockfileReadError)?;
 
     let stored_hash = BASE64_STANDARD
-        .decode(&stored_hash)
+        .decode(stored_hash)
         .expect("Failed to decode Base64");
 
     // this ensures the decoded bytes fit into a `[u8; 32]` array, which is the hash type
