@@ -7,7 +7,7 @@ use sf_protos::ethereum::r#type::v2::Block;
 use crate::errors::EraValidateError;
 
 pub const MAX_EPOCH_SIZE: usize = 8192;
-pub const FINAL_EPOCH: usize = 01896;
+pub const FINAL_EPOCH: usize = 1896;
 pub const MERGE_BLOCK: u64 = 15537394;
 
 pub fn compute_epoch_accumulator(
