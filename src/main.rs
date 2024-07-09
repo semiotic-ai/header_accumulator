@@ -138,8 +138,8 @@ fn main() {
 
     match matches.subcommand() {
         // TODO: move this functionality to flat_head
-        Some(("era_validate", era_validate_matches)) => match era_validate_matches.subcommand() {
-            Some(("stream", stream_matches)) => {
+        Some(("era_validate", era_validate_matches)) => {
+            if let Some(("stream", stream_matches)) = era_validate_matches.subcommand() {
                 let master_accumulator_file =
                     stream_matches.get_one::<String>("master_accumulator_file");
                 let master_accumulator = match master_accumulator_file {
@@ -152,12 +152,9 @@ fn main() {
                 };
                 let reader = BufReader::with_capacity(1 << 32, std::io::stdin().lock());
                 let writer = std::io::stdout();
-                // stream_validation(master_accumulator.clone(), reader, writer)
-                //     .expect("Validation Error");
                 process::exit(0);
             }
-            _ => {}
-        },
+        }
         //TODO: move this functionality to flat_head
         // Some(("generate_inclusion_proof", generate_inclusion_proof_matches)) => {
         //     let directory = generate_inclusion_proof_matches
