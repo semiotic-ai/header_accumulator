@@ -142,7 +142,7 @@ fn main() {
             if let Some(("stream", stream_matches)) = era_validate_matches.subcommand() {
                 let master_accumulator_file =
                     stream_matches.get_one::<String>("master_accumulator_file");
-                let master_accumulator = match master_accumulator_file {
+                let _master_accumulator = match master_accumulator_file {
                     Some(master_accumulator_file) => {
                         MasterAccumulator::try_from_file(master_accumulator_file.into())
                             .map_err(|_| EraValidateError::InvalidMasterAccumulatorFile)
@@ -150,8 +150,8 @@ fn main() {
                     }
                     None => MasterAccumulator::default(),
                 };
-                let reader = BufReader::with_capacity(1 << 32, std::io::stdin().lock());
-                let writer = std::io::stdout();
+                let _reader = BufReader::with_capacity(1 << 32, std::io::stdin().lock());
+                let _writer = std::io::stdout();
                 process::exit(0);
             }
         }
