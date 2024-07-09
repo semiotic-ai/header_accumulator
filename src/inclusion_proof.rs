@@ -71,10 +71,7 @@ pub fn verify_inclusion_proof(
     master_accumulator_file: Option<MasterAccumulator>,
     inclusion_proof: Vec<[H256; 15]>,
 ) -> Result<(), EraValidateError> {
-    let master_acc = match master_accumulator_file {
-        Some(master_acc) => master_acc,
-        None => MasterAccumulator::default(),
-    };
+    let master_acc = master_accumulator_file.unwrap_or_default();
 
     for (block_idx, _) in blocks.iter().enumerate() {
         let bhp = BlockHeaderProof::AccumulatorProof(AccumulatorProof {
