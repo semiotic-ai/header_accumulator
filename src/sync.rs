@@ -2,8 +2,8 @@ use base64::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
-use std::fs::{metadata, write, OpenOptions};
-use std::io::Read;
+use std::fs::{metadata, OpenOptions};
+use std::io::{Read, Write};
 use std::path::Path;
 
 use crate::errors::{EraValidateError, SyncError};
@@ -31,27 +31,40 @@ impl Lock {
     pub fn new() -> Self {
         Lock::default()
     }
+
+    fn from_file(file_path: &Path) -> Result<Self, Box<dyn Error>> {
+        let mut file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(file_path)?;
+
+        let mut contents = String::new();
+
+        file.read_to_string(&mut contents)?;
+
+        Ok(if contents.trim().is_empty() {
+            Lock::new()
+        } else {
+            serde_json::from_str(&contents).unwrap_or_default()
+        })
+    }
 }
 
 pub fn store_last_state(file_path: &Path, entry: LockEntry) -> Result<(), Box<dyn Error>> {
-    let mut lock = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true)
-        .open(file_path)?;
-    let mut contents = String::new();
-
-    lock.read_to_string(&mut contents)?;
-    // Attempt to deserialize the contents of the file into a `Lock` struct
-    let mut json_lock: Lock = match serde_json::from_str(&contents) {
-        Ok(lock) => lock,
-        Err(_) => Lock::new(),
-    };
+    let mut json_lock = Lock::from_file(file_path)?;
 
     json_lock.entries.insert(entry.epoch, entry.root);
 
     let json_string = serde_json::to_string_pretty(&json_lock)?;
-    write(file_path, json_string)?;
+
+    let mut file = OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open(file_path)?;
+
+    file.write_all(json_string.as_bytes())?;
 
     Ok(())
 }
@@ -61,23 +74,11 @@ pub fn check_sync_state(
     epoch: String,
     macc_hash: [u8; 32],
 ) -> Result<bool, Box<dyn Error>> {
-    let file_exists = metadata(file_path).is_ok();
-    if !file_exists {
+    if metadata(file_path).is_err() {
         log::info!("The lockfile did not exist and was created");
     }
 
-    let mut lock = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true)
-        .open(file_path)?;
-    let mut contents = String::new();
-
-    lock.read_to_string(&mut contents)?;
-    let json_lock: Lock = match serde_json::from_str(&contents) {
-        Ok(lock) => lock,
-        Err(_) => Lock::new(),
-    };
+    let json_lock = Lock::from_file(file_path)?;
 
     if !json_lock.entries.contains_key(&epoch) {
         return Ok(false);
