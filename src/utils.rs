@@ -56,12 +56,10 @@ pub fn header_from_block(block: &Block) -> Result<Header, EraValidateError> {
     let extra_data = block_header.extra_data.clone();
     let mix_hash = Some(Hash256::from_slice(block_header.mix_hash.as_slice()));
     let nonce = Some(H64::from_slice(&block_header.nonce.to_be_bytes()));
-    let base_fee_per_gas = match block_header.base_fee_per_gas.as_ref() {
-        Some(base_fee_per_gas) => Some(EthereumU256::from_big_endian(
-            base_fee_per_gas.bytes.as_slice(),
-        )),
-        None => None,
-    };
+    let base_fee_per_gas = block_header
+        .base_fee_per_gas
+        .as_ref()
+        .map(|base_fee_per_gas| EthereumU256::from_big_endian(base_fee_per_gas.bytes.as_slice()));
     let withdrawals_root = match block_header.withdrawals_root.is_empty() {
         true => None,
         false => Some(Hash256::from_slice(
