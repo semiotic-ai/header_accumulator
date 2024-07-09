@@ -37,20 +37,17 @@ pub fn header_from_block(block: &Block) -> Result<Header, EraValidateError> {
     let transactions_root = Hash256::from_slice(block_header.transactions_root.as_slice());
     let receipts_root = Hash256::from_slice(block_header.receipt_root.as_slice());
     let logs_bloom = Bloom::from_slice(block_header.logs_bloom.as_slice());
-    let difficulty = EthereumU256::try_from(
+    let difficulty = EthereumU256::from(
         block_header
             .difficulty
             .as_ref()
             .ok_or(EraValidateError::HeaderDecodeError)?
             .bytes
             .as_slice(),
-    )
-    .map_err(|_| EraValidateError::HeaderDecodeError)?;
+    );
     let number = block_header.number;
-    let gas_limit = EthereumU256::try_from(block_header.gas_limit)
-        .map_err(|_| EraValidateError::HeaderDecodeError)?;
-    let gas_used = EthereumU256::try_from(block_header.gas_used)
-        .map_err(|_| EraValidateError::HeaderDecodeError)?;
+    let gas_limit = EthereumU256::from(block_header.gas_limit);
+    let gas_used = EthereumU256::from(block_header.gas_used);
     let timestamp = block_header
         .timestamp
         .as_ref()
