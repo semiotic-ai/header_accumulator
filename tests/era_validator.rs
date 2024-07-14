@@ -2,12 +2,12 @@ use std::fs;
 
 use decoder::decode_flat_files;
 use header_accumulator::{
-    era_validator::era_validate, errors::EraValidateError, types::ExtHeaderRecord,
+    era_validator::EraValidator, errors::HeaderAccumulatorError, types::ExtHeaderRecord,
 };
 use trin_validation::accumulator::PreMergeAccumulator;
 
 #[test]
-fn test_era_validate() -> Result<(), EraValidateError> {
+fn test_era_validate() -> Result<(), HeaderAccumulatorError> {
     // clean up before tests
     if let Err(e) = fs::remove_file("lockfile.json") {
         eprintln!("Error deleting lockfile.json: {}", e);
@@ -46,37 +46,19 @@ fn test_era_validate() -> Result<(), EraValidateError> {
     assert_eq!(headers[0].block_number, 0);
     let premerge_accumulator = PreMergeAccumulator::default();
 
-    let result = era_validate(
-        headers.clone(),
-        premerge_accumulator.clone(),
-        0,
-        None,
-        Some(false),
-    )?;
+    let result = premerge_accumulator.era_validate(headers.clone(), 0, None, false)?;
     println!("result 1: {:?}", result);
 
     assert!(result.contains(&0), "The vector does not contain 0");
 
     // Test with creating a lockfile
-    let result = era_validate(
-        headers.clone(),
-        premerge_accumulator.clone(),
-        0,
-        None,
-        Some(true),
-    )?;
+    let result = premerge_accumulator.era_validate(headers.clone(), 0, None, true)?;
     println!("result 2: {:?}", result);
 
     assert!(result.contains(&0), "The vector does not contain 0");
 
     // test with the lockfile created before.
-    let result = era_validate(
-        headers.clone(),
-        premerge_accumulator.clone(),
-        0,
-        None,
-        Some(true),
-    )?;
+    let result = premerge_accumulator.era_validate(headers.clone(), 0, None, true)?;
 
     // already validated epochs are not included in the array.
     assert_eq!(result.len(), 0);
@@ -91,7 +73,7 @@ fn test_era_validate() -> Result<(), EraValidateError> {
 
 #[test]
 
-fn test_era_validate_compressed() -> Result<(), EraValidateError> {
+fn test_era_validate_compressed() -> Result<(), HeaderAccumulatorError> {
     // clean up before tests
     if let Err(e) = fs::remove_file("lockfile.json") {
         eprintln!("Error deleting lockfile.json: {}", e);
@@ -132,38 +114,20 @@ fn test_era_validate_compressed() -> Result<(), EraValidateError> {
 
     let premerge_accumulator = PreMergeAccumulator::default();
 
-    let result = era_validate(
-        headers.clone(),
-        premerge_accumulator.clone(),
-        0,
-        None,
-        Some(false),
-    )?;
+    let result = premerge_accumulator.era_validate(headers.clone(), 0, None, false)?;
     println!("result 1: {:?}", result);
 
     assert!(result.contains(&0), "The vector does not contain 0");
 
     // Test with creating a lockfile
-    let result = era_validate(
-        headers.clone(),
-        premerge_accumulator.clone(),
-        0,
-        None,
-        Some(true),
-    )?;
+    let result = premerge_accumulator.era_validate(headers.clone(), 0, None, true)?;
     println!("result 2: {:?}", result);
 
     assert!(result.contains(&0), "The vector does not contain 0");
 
     // test with the lockfile created before.
 
-    let result = era_validate(
-        headers.clone(),
-        premerge_accumulator.clone(),
-        0,
-        None,
-        Some(true),
-    )?;
+    let result = premerge_accumulator.era_validate(headers.clone(), 0, None, true)?;
 
     // already validated epochs are not included in the array.
     assert_eq!(result.len(), 0);

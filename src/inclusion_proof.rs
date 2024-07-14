@@ -1,13 +1,9 @@
-use crate::{
-    errors::EraValidateError,
-    types::ExtHeaderRecord,
-    utils::{compute_epoch_accumulator, header_from_block, MAX_EPOCH_SIZE},
-};
+use crate::{epoch::MAX_EPOCH_SIZE, errors::EraValidateError, types::ExtHeaderRecord};
 
 use alloy_primitives::FixedBytes;
 use ethportal_api::{
     types::execution::{
-        accumulator::HeaderRecord,
+        accumulator::{EpochAccumulator, HeaderRecord},
         header_with_proof::{BlockHeaderProof, HeaderWithProof, PreMergeAccumulatorProof},
     },
     Header,
@@ -47,9 +43,12 @@ pub fn generate_inclusion_proof(
     for _ in epoch_start..epoch_end {
         let epoch_headers: Vec<ExtHeaderRecord> = ext_headers.drain(0..MAX_EPOCH_SIZE).collect();
         let header_records: Vec<HeaderRecord> = epoch_headers.iter().map(Into::into).collect();
-        let tmp_headers: Vec<Header> = epoch_headers.into_iter().map(Into::into).collect();
+        let tmp_headers: Vec<Header> = epoch_headers
+            .into_iter()
+            .map(ExtHeaderRecord::try_into)
+            .collect::<Result<_, _>>()?;
         headers.extend(tmp_headers);
-        epoch_accumulators.push(compute_epoch_accumulator(&header_records)?);
+        epoch_accumulators.push(EpochAccumulator::from(header_records));
     }
 
     for block_idx in start_block..=end_block {
@@ -89,7 +88,7 @@ pub fn verify_inclusion_proof(
         });
 
         let hwp = HeaderWithProof {
-            header: header_from_block(&blocks[block_idx].clone())?,
+            header: Header::try_from(&blocks[block_idx])?,
             proof: bhp,
         };
 
